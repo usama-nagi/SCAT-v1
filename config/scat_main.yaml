@@ -1,0 +1,183 @@
+# SCAT Training Configuration (config/scat_config.yaml)
+
+# Model
+model:
+  vocab_size: 25        # PAD UNK START END MASK + 20 amino acids
+  d_model: 256
+  nhead: 8
+  dropout: 0.1
+
+  sequence_encoder:
+    num_layers: 4
+    dim_feedforward: 1024
+    max_len: 512
+
+  # Gradient-isolated adapter - only updated on SAbDab batches.
+  adapter:
+    enabled: true
+    bottleneck: 64      # d_model / 4; keep small to avoid overfitting on 17k SAbDab
+
+  geometry_encoder:
+    enabled: true
+    backend: "e3nn"
+    hidden_dim: 128
+    num_layers: 3
+    edge_cutoff: 10.0
+    max_ell: 2
+    max_neighbors: 12
+
+  decoder:
+    num_layers: 6
+    dim_feedforward: 1024
+    antigen_xattn_layers: [2, 4, 6]
+
+  heads:
+    interface: true
+    geometry: true
+
+  conditioning:
+    fusion: projection
+    hidden_dim: 1024
+
+  use_metadata: true
+  use_gradient_checkpointing: false
+  cdr_emb_drop_p: 0.15   # 15% CDR embedding dropout - forces reliance on structural cond
+  fw_drop_p: 0.30      # 30% framework residue dropout - reduces overfitting to germline and encourages CDR reliance
+
+# Latent probe
+latent_probe:
+  enabled: true
+  max_batches: 25
+  run_umap: false
+
+# Training
+train:
+  name: "SCAT"
+  seed: 42
+  device: "cuda"
+  use_compile: true
+
+  epochs: 99
+  steps_per_epoch: 25_000
+
+  phase1_end_step:  75_000     # language model warmup, OAS only
+  phase2_end_step: 350_000     # adapter enables earlier antigen introduction
+  max_steps:     600_000     
+
+  val_split_overrides:
+    sabdab:    0.05
+
+  sampling_probabilities:
+    phase_1:
+      oas_hl:     0.68
+      oas_paired: 0.32
+
+    phase_2:
+      oas_hl:     0.48
+      oas_paired: 0.10
+      sabdab:     0.42
+
+    phase_3:
+      oas_hl:     0.20
+      oas_paired: 0.20
+      sabdab:     0.60
+
+  gradient_weights:
+    oas_hl:    1.0
+    oas_paired: 1.0
+    sabdab:     1.0
+
+  # Batch
+  batch_size: 128
+  gradient_accumulation_steps: 1
+
+  # Data loading
+  num_workers: 4
+  prefetch_factor: 3
+  pin_memory: true
+  persistent_workers: true
+  use_amp: true
+
+  # Optimizer
+  lr: 2.0e-4
+  weight_decay: 0.01
+  grad_clip: 1.0
+
+  # LR Scheduler
+  use_scheduler: true
+  warmup_steps: 10_000
+  min_lr: 1.0e-5
+
+  # Validation
+  val_split: 0.01
+  max_val_batches: 200
+  max_val_batches_oas_hl: 500
+  max_val_batches_oas_paired: 200
+  max_val_batches_sabdab: 15
+  val_start_epoch: 1
+  log_interval: 5_000
+
+  # Checkpointing
+  checkpoint_dir: "scat_checkpoints"
+  save_every_n_steps: 25_000
+  save_top_k: 5
+
+  # Early stopping
+  early_stopping_patience: 5
+  early_stopping_min_delta: 0.01
+
+  # Multi-GPU
+  find_unused_parameters: false
+  gate_logit_clamp: 4.0   # applies to geom_cond_gate only 
+  
+  # Scheduled sampling for full-Fv training expermient
+  SCHED_SAMPLE_ENABLED: false
+  SCHED_SAMPLE_START_STEP: 0          # start immediately from resume step
+  SCHED_SAMPLE_RAMP_STEPS: 200000     # linearly ramp over 200k steps
+  SCHED_SAMPLE_MAX_P: 0.0 #0.40      # max probability of using model's own token
+                                      # (0.40 = 40% model token, 60% teacher forcing at peak)
+  
+
+# Loss weights
+loss_weights:
+  AR:  1.0
+  MLM: 0.5
+  GEO: 0.5
+  IF:  0.4
+
+  AR_FW_WEIGHT_SABDAB: 0.1 # 1.0 Change for full fv not tried yet
+
+  # CDR weighting
+  CDR_W:       1.0   # additive weight on all CDR1+2+3 positions
+  CDR3_EXTRA_H: 1.5  # additional weight on CDR-H3 specifically
+  CDR3_EXTRA_L: 0.5  # additional weight on CDR-L3 specifically
+  CDR3_CONTACT_EXTRA: 1.0   
+
+  AR_LABEL_SMOOTH: 0.08
+
+  # Anti-invariance: KL branch
+  ANTI_INV:        0.10
+  ANTI_INV_MARGIN: 0.10
+
+  # Anti-invariance: NLL ranking loss
+  ANTI_INV_NLL_WEIGHT: 0.0
+  ANTI_INV_NLL_MARGIN: 0.75 #90
+
+  ANTI_INV_INFONCE_WEIGHT: 0.05
+  ANTI_INV_INFONCE_TEMP: 0.07
+
+# Loss weight schedule
+loss_weight_schedule:
+  phase_3:
+    ANTI_INV_NLL_WEIGHT: 0.015   # active in phase_3 only
+
+# Dataset paths
+data:
+  oas:
+    enabled: true
+    path: /data/gssi-cs/scat-data/oas_mmap_latest
+    exclude_indices_path: /home/abad/scat-mini/data/loaders/oas_near80_h3_idx.npy
+
+  sabdab:
+    enabled: true
+    path: /data/gssi-cs/scat-data/sabdab_final
