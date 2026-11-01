@@ -61,12 +61,6 @@ Baseline numbers are taken from the shared evaluation reported by AGForce. SCAT 
 
 The three properties are FvNetCharge, FvCSP and HISum. The four-property rate adds a Boltz-2 + FoldX interaction-energy criterion measured against the reference antibody, on subsamples of about 100 candidates per target. PD-L1 is low largely because the fixed atezolizumab framework supplies almost none of the net charge the FvCSP threshold requires. SCAT is never trained toward these thresholds.
 
-**Caveats (also stated in the paper).**
-- The baseline comparison shares a benchmark, not a protocol. Inputs, training data and task formulation differ. SCAT is sequence-only and trained on a much larger corpus, while the baselines co-design structure and sequence on SAbDab-scale data.
-- AAR and CAAR measure recovery of the native CDR-H3. They do not establish binding, affinity or specificity.
-- No generated candidate has been tested experimentally. Boltz-2 and FoldX scores are computational prioritization proxies.
-- "Held out" means passing the antigen-cluster and antibody-sequence filters described in the appendix. It does not rule out all remote homologues.
-
 ## Repository layout
 
 <!-- TODO: adjust paths and descriptions to match the actual repository tree -->
