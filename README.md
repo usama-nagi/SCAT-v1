@@ -132,7 +132,7 @@ python sample_evaluation_new.py --help
 ```bibtex
 @inproceedings{abad2026scat,
   title     = {{SCAT}: Structure-Conditioned Antibody Transformer for {CDR} Design},
-  author    = {Bin Abad, M. Usama and Toschi, Nicola and Bianconi, Elisa and Raimondi, Franco},
+  author    = {Abad, M. Usama Bin and Toschi, Nicola and Bianconi, Elisa and Raimondi, Franco},
   booktitle = {2nd SIMBIOCHEM Workshop at NeurIPS 2026},
   year      = {2026}
 }
