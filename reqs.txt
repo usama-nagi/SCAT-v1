@@ -1,0 +1,10 @@
+torch==2.9.1
+numpy
+pandas
+pyyaml
+tqdm
+e3nn==0.6.0
+scikit-learn
+umap-learn
+fair-esm
+boltz==2.2.1
