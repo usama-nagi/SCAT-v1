@@ -88,8 +88,8 @@ The three properties are FvNetCharge, FvCSP and HISum. The four-property rate ad
 <!-- TODO: confirm versions and add a requirements.txt / environment.yml -->
 
 ```bash
-git clone https://github.com/<user>/<repo>.git
-cd <repo>
+git clone https://github.com/usama-nagi/SCAT-v1.git
+cd uSCAT-v1
 conda create -n scat python=3.10
 conda activate scat
 pip install -r requirements.txt
@@ -124,22 +124,8 @@ python evaluation_new.py --help
 python sample_evaluation_new.py --help
 ```
 
-**Checkpoint.** The paper results use the checkpoint at training step 950,000.
+**Checkpoint.** The paper results use the checkpoint availaible at.
 <!-- TODO: add checkpoint link (Zenodo / Hugging Face / OSF) -->
-
-## Reproducibility notes
-
-- The paper results come from a single locked checkpoint. Inference-time interventions (antigen swap, geometry ablation, gate attenuation) reuse that checkpoint with no retraining. The cross-attention depth ablation uses three separately trained variants, one run each, so run-to-run variance was not estimated.
-- Decoding settings are listed per experiment in the paper (primary metrics: greedy; antigen-gap sweep: 16 configurations over temperature and top-k).
-- Boltz-2 and FoldX are applied only to already-generated sequences. They do not influence training or decoding.
-
-## Limitations
-
-- The geometry encoder uses inter-residue distance and residue chemistry. It has no relative-orientation signal.
-- Antigen and antibody structures are encoded separately. SCAT does not model their relative pose or an explicit epitope.
-- The interface loss is trained on positive-only SAbDab complexes, so it is an auxiliary representation objective and not a binder/non-binder classifier.
-- Antigen information enters the decoder through both the conditioning vector and cross-attention. The ablations vary cross-attention depth and gate strength but do not include a conditioning-vector-only variant.
-- MHC-II immunogenicity and aggregation/solubility are not evaluated.
 
 ## Citation
 
