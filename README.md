@@ -83,10 +83,10 @@ The three properties are FvNetCharge, FvCSP and HISum. The four-property rate ad
 
 ```bash
 git clone https://github.com/usama-nagi/SCAT-v1.git
-cd uSCAT-v1
+cd SCAT-v1
 conda create -n scat python=3.10
 conda activate scat
-pip install -r requirements.txt
+pip install -r reqs.txt
 ```
 
 Core dependencies: PyTorch, e3nn, BioPython, NumPy. For post hoc screening you also need [Boltz-2](https://github.com/jwohlwend/boltz) and [FoldX](https://foldxsuite.crg.eu/) (FoldX requires its own license). MMseqs2 is used for antigen clustering.
